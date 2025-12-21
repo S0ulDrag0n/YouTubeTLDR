@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const config = {
         baseURL: `${location.protocol}//${location.hostname}${location.port ? ':' + location.port : ''}`,
         storageKeys: {
+            provider: 'youtube-tldr-provider',
             apiKey: 'youtube-tldr-api-key',
             model: 'youtube-tldr-model',
             language: 'youtube-tldr-language',
@@ -11,7 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
             summaries: 'youtube-tldr-summaries'
         },
         defaults: {
-            model: 'gemini-2.5-flash',
+            provider: 'ollama',
+            model: 'gpt-oss:latest',
             systemPrompt: "You are an expert video summarizer specializing in creating structured, accurate overviews. Given a YouTube video transcript, extract and present the most crucial information in an article-style format. Prioritize fidelity to the original content, ensuring all significant points, arguments, and key details are faithfully represented. Organize the summary logically with clear, descriptive headings and/or concise bullet points. For maximum skim-readability, bold key terms, core concepts, and critical takeaways within the text. Eliminate advertisements, sponsorships, conversational filler, repeated phrases, and irrelevant tangents, but retain all essential content.",
             language: 'en'
         }
@@ -19,7 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const dom = {
         // Settings
+        provider: document.getElementById('provider'),
         apiKey: document.getElementById('api-key'),
+        apiKeyLabel: document.getElementById('api-key-label-text'),
         model: document.getElementById('model'),
         language: document.getElementById('language'),
         systemPrompt: document.getElementById('system-prompt'),
@@ -83,6 +87,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             [dom.apiKey, dom.model, dom.systemPrompt].forEach(el => el.addEventListener('change', this.saveSettings));
             [dom.dryRun, dom.transcriptOnly].forEach(el => el.addEventListener('change', this.saveSettings));
+            
+            dom.provider.addEventListener('change', () => {
+                this.updateProviderFields();
+                this.saveSettings();
+            });
         },
 
         loadSummaries() {
@@ -98,21 +107,39 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         loadSettings() {
+            dom.provider.value = localStorage.getItem(config.storageKeys.provider) || config.defaults.provider;
             dom.apiKey.value = localStorage.getItem(config.storageKeys.apiKey) || '';
             dom.model.value = localStorage.getItem(config.storageKeys.model) || config.defaults.model;
             dom.language.value = localStorage.getItem(config.storageKeys.language) || config.defaults.language;
             dom.systemPrompt.value = localStorage.getItem(config.storageKeys.systemPrompt) || config.defaults.systemPrompt;
             dom.dryRun.checked = localStorage.getItem(config.storageKeys.dryRun) === 'true';
             dom.transcriptOnly.checked = localStorage.getItem(config.storageKeys.transcriptOnly) === 'true';
+            this.updateProviderFields();
         },
 
         saveSettings() {
+            localStorage.setItem(config.storageKeys.provider, dom.provider.value);
             localStorage.setItem(config.storageKeys.apiKey, dom.apiKey.value);
             localStorage.setItem(config.storageKeys.model, dom.model.value);
             localStorage.setItem(config.storageKeys.language, dom.language.value);
             localStorage.setItem(config.storageKeys.systemPrompt, dom.systemPrompt.value);
             localStorage.setItem(config.storageKeys.dryRun, dom.dryRun.checked);
             localStorage.setItem(config.storageKeys.transcriptOnly, dom.transcriptOnly.checked);
+        },
+
+        updateProviderFields() {
+            const isGemini = dom.provider.value === 'gemini';
+            if (isGemini) {
+                dom.apiKeyLabel.textContent = 'Gemini API Key';
+                dom.apiKey.type = 'password';
+                dom.apiKey.placeholder = 'AIzaSy...';
+                dom.model.placeholder = 'gemini-2.5-flash';
+            } else {
+                dom.apiKeyLabel.textContent = 'API Key (optional)';
+                dom.apiKey.type = 'password';
+                dom.apiKey.placeholder = 'Optional - for secured Ollama servers';
+                dom.model.placeholder = 'gpt-oss:latest';
+            }
         },
 
         async handleFormSubmit(event) {
@@ -135,6 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        provider: dom.provider.value,
                         url,
                         api_key: dom.apiKey.value,
                         model: dom.model.value,

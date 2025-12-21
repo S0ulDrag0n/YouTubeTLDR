@@ -4,7 +4,7 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/milkshiift/YouTubeTLDR/blob/master/LICENSE)
 
 <div align="center">
-<h3>⚡ A lightweight, self-hosted YouTube video summarizer with Gemini AI<br>
+<h3>⚡ A lightweight, self-hosted YouTube video summarizer with Ollama & Gemini AI<br>
 <sub>Demo: <a href="https://tldr.milkshift.dedyn.io/">https://tldr.milkshift.dedyn.io/</a></sub>
 </h3>
 <img src="/assets/mainScreenshot.png" width="400" alt="New summary page screenshot">
@@ -13,9 +13,10 @@
 
 ## ✨ Features
 
+*   🤖 **Dual AI Support:** Choose between Ollama (default, self-hosted) or Gemini AI
 *   🎯 **Customizable Prompts:** Tailor the AI's instructions to get summaries in the format you prefer
-* ⚙️ **Model Selection:** Choose any available Gemini model
-* 📝 **View Transcript:** Access the full, raw video transcript
+*   ⚙️ **Model Selection:** Choose any available Ollama or Gemini model
+*   📝 **View Transcript:** Access the full, raw video transcript
 *   📚 **History:** Your summaries are saved locally in your browser for future reference
 *   🔒 **Privacy-Focused:** Simple Rust server that runs on your own machine. Your data stays yours
 *   🎨 **Modern UI:** Clean and beautiful user interface
@@ -26,7 +27,7 @@ YouTubeTLDR embraces simplicity — maximum functionality with minimal overhead.
 
 *   🪶 **Featherweight & Zero Bloat:** Single binary ~**0.3MB**. No databases, no Tokio, no frameworks
 *   ⚡ **Lightning Fast:** Pure Rust + vanilla HTML/JS
-*   🔑 **BYOK:** Bring Your Own Key. Uses your Google Gemini API directly — no proxies, no data collection
+*   🔑 **BYOK:** Bring Your Own Key. Use your own Ollama server or Gemini API — no proxies, no data collection
 *   🎯 **Single Purpose:** Just generates and saves summaries, that's it
 
 Note: This server is optimized for personal use and utilizes a multithreaded worker pool for concurrency. It is not designed to support hundreds of concurrent users.
@@ -35,7 +36,8 @@ Note: This server is optimized for personal use and utilizes a multithreaded wor
 
 ### Prerequisites
 
-*   A [Google Gemini API Key](https://aistudio.google.com/app/apikey) (Free tier with generous limits)
+*   **Option 1 (Default):** [Ollama](https://ollama.com/) installed locally or accessible on your network
+*   **Option 2:** A [Google Gemini API Key](https://aistudio.google.com/app/apikey) (Free tier with generous limits)
 
 ### Running the Application
 
@@ -44,11 +46,22 @@ Note: This server is optimized for personal use and utilizes a multithreaded wor
     ./YouTubeTLDR
     ```
 2.  Open `http://localhost:8000` in your browser
-3.  Click "Advanced Settings" and enter your API key
-4.  Paste a YouTube URL and click "Summarize"
+3.  Select your AI provider (Ollama or Gemini) in Settings
+4.  For Gemini: Enter your API key in Settings. Optional for Ollama.
+5.  Paste a YouTube URL and click "Summarize"
 
-You can change the IP and port with `TLDR_IP` and `TLDR_PORT` environment variables.    
-The amount of workers can be changed with `TLDR_WORKERS`, set it to the amount of concurrent users you expect.
+### Environment Variables
+
+*   `TLDR_IP` - Server IP address (default: `0.0.0.0`)
+*   `TLDR_PORT` - Server port (default: `8000`)
+*   `TLDR_WORKERS` - Number of worker threads (default: `4`)
+*   `OLLAMA_URL` - Ollama server URL (default: `http://localhost:11434`)
+
+**Example:**
+```bash
+export OLLAMA_URL="http://192.168.1.100:11434"
+./YouTubeTLDR
+```
 
 ## 🔨 Building from Source
 

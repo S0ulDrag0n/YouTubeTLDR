@@ -1,4 +1,5 @@
 mod gemini;
+mod ollama;
 mod subtitle;
 
 use crate::subtitle::get_video_data;
@@ -13,6 +14,7 @@ use std::time::Duration;
 
 #[derive(Deserialize)]
 struct SummarizeRequest {
+    provider: Option<String>,
     url: String,
     api_key: Option<String>,
     model: Option<String>,
@@ -302,6 +304,13 @@ fn write_error_response(stream: &mut TcpStream, status: &str, msg: &str) -> io::
 }
 
 fn perform_summary_work(req: &SummarizeRequest) -> Result<SummarizeResponse, String> {
+    let provider = req.provider.as_deref().unwrap_or("ollama");
+    if provider != "gemini" && provider != "ollama" {
+        return Err(format!("Unsupported provider: {}", provider));
+    }
+
+    println!("📡 Using provider: {}", provider);
+
     if req.dry_run {
         let test_md = include_str!("./markdown_test.md");
         return Ok(SummarizeResponse {
@@ -323,11 +332,6 @@ fn perform_summary_work(req: &SummarizeRequest) -> Result<SummarizeResponse, Str
         });
     }
 
-    let api_key =
-        req.api_key.as_deref().filter(|k| !k.is_empty()).ok_or(
-            "Missing Gemini API key. Get one here: https://aistudio.google.com/app/apikey",
-        )?;
-
     let model = req
         .model
         .as_deref()
@@ -340,8 +344,25 @@ fn perform_summary_work(req: &SummarizeRequest) -> Result<SummarizeResponse, Str
         .filter(|p| !p.is_empty())
         .ok_or("Missing system prompt")?;
 
-    let summary = gemini::summarize(api_key, model, system_prompt, &transcript)
-        .map_err(|e| format!("API error: {e}"))?;
+    let summary = if provider == "gemini" {
+        let api_key = req.api_key.as_deref().filter(|k| !k.is_empty()).ok_or(
+            "Missing Gemini API key. Get one here: https://aistudio.google.com/app/apikey",
+        )?;
+        println!("🤖 Using model: {}", model);
+        gemini::summarize(api_key, model, system_prompt, &transcript)
+            .map_err(|e| format!("API error: {e}"))?
+    } else {
+        // Ollama uses base URL from OLLAMA_URL env var or defaults to localhost
+        let base_url = env::var("OLLAMA_URL").unwrap_or_else(|_| "http://localhost:11434".into());
+        println!("🔗 Ollama URL: {}", base_url);
+        println!("🤖 Using model: {}", model);
+        let api_key = req.api_key.as_deref().filter(|k| !k.is_empty());
+        if api_key.is_some() {
+            println!("🔐 Using API key authentication");
+        }
+        ollama::summarize(&base_url, api_key, model, system_prompt, &transcript)
+            .map_err(|e| format!("API error: {e}"))?
+    };
 
     Ok(SummarizeResponse {
         summary,

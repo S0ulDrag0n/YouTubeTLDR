@@ -50,17 +50,27 @@
                     <summary><span><i data-lucide="settings"></i> Settings</span><i data-lucide="chevron-down" class="chevron"></i></summary>
                      <div class="settings-content">
                          <div>
-                             <label for="api-key">
-                                 <i data-lucide="key-round"></i> Gemini API Key
+                             <label for="provider">
+                                 <i data-lucide="network"></i> AI Provider
                              </label>
-                             <input type="password" id="api-key" placeholder="AIzaSy...">
+                             <select id="provider">
+                                 <option value="ollama">Ollama</option>
+                                 <option value="gemini">Gemini</option>
+                             </select>
+                         </div>
+
+                         <div>
+                             <label for="api-key" id="api-key-label">
+                                 <i data-lucide="key-round"></i> <span id="api-key-label-text">Ollama URL (optional)</span>
+                             </label>
+                             <input type="text" id="api-key" placeholder="http://localhost:11434">
                          </div>
 
                          <div>
                              <label for="model">
                                  <i data-lucide="brain-circuit"></i> Model
                              </label>
-                             <input type="text" id="model" placeholder="gemini-2.5-flash">
+                             <input type="text" id="model" placeholder="gpt-oss:latest">
                          </div>
 
                          <div>
@@ -80,14 +90,14 @@
                          <div class="checkbox-group">
                              <input type="checkbox" id="transcript-only">
                              <label for="transcript-only">
-                                 <i data-lucide="captions"></i> Transcript Only (skip Gemini summarization)
+                                 <i data-lucide="captions"></i> Transcript Only (skip AI summarization)
                              </label>
                          </div>
 
                          <div class="checkbox-group">
                              <input type="checkbox" id="dry-run">
                              <label for="dry-run">
-                                 <i data-lucide="flask-conical"></i> Dry Run (skip YouTube and Gemini network calls and show Markdown test)
+                                 <i data-lucide="flask-conical"></i> Dry Run (skip YouTube and AI network calls and show Markdown test)
                              </label>
                          </div>
                      </div>
