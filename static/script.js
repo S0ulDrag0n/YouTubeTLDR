@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentSummary) {
                 dom.summaryTitleText.textContent = currentSummary.name;
                 dom.videoLink.href = currentSummary.url;
-                dom.summaryOutput.mdContent = currentSummary.summary;
+                dom.summaryOutput.innerHTML = marked.parse(currentSummary.summary);
                 if (currentSummary.transcript && currentSummary.transcript.trim()) {
                     dom.transcriptText.textContent = currentSummary.transcript;
                     dom.transcriptSection.classList.remove('hidden');
