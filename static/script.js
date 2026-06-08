@@ -128,12 +128,17 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         updateProviderFields() {
-            const isGemini = dom.provider.value === 'gemini';
-            if (isGemini) {
+            const provider = dom.provider.value;
+            if (provider === 'gemini') {
                 dom.apiKeyLabel.textContent = 'Gemini API Key';
                 dom.apiKey.type = 'password';
                 dom.apiKey.placeholder = 'AIzaSy...';
                 dom.model.placeholder = 'gemini-2.5-flash';
+            } else if (provider === 'openai') {
+                dom.apiKeyLabel.textContent = 'API Key (optional)';
+                dom.apiKey.type = 'password';
+                dom.apiKey.placeholder = 'Optional - for secured endpoints';
+                dom.model.placeholder = 'llama-3.2';
             } else {
                 dom.apiKeyLabel.textContent = 'API Key (optional)';
                 dom.apiKey.type = 'password';

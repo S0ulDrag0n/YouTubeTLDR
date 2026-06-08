@@ -1,5 +1,6 @@
 mod gemini;
 mod ollama;
+mod openai;
 mod subtitle;
 
 use crate::subtitle::get_video_data;
@@ -305,7 +306,7 @@ fn write_error_response(stream: &mut TcpStream, status: &str, msg: &str) -> io::
 
 fn perform_summary_work(req: &SummarizeRequest) -> Result<SummarizeResponse, String> {
     let provider = req.provider.as_deref().unwrap_or("ollama");
-    if provider != "gemini" && provider != "ollama" {
+    if provider != "gemini" && provider != "ollama" && provider != "openai" {
         return Err(format!("Unsupported provider: {}", provider));
     }
 
@@ -350,6 +351,17 @@ fn perform_summary_work(req: &SummarizeRequest) -> Result<SummarizeResponse, Str
         )?;
         println!("🤖 Using model: {}", model);
         gemini::summarize(api_key, model, system_prompt, &transcript)
+            .map_err(|e| format!("API error: {e}"))?
+    } else if provider == "openai" {
+        // OpenAI-compatible endpoint (llama.cpp, vllm, etc.)
+        let base_url = env::var("OPENAI_URL").unwrap_or_else(|_| "http://localhost:8000".into());
+        println!("🔗 OpenAI-compatible URL: {}", base_url);
+        println!("🤖 Using model: {}", model);
+        let api_key = req.api_key.as_deref().filter(|k| !k.is_empty());
+        if api_key.is_some() {
+            println!("🔐 Using API key authentication");
+        }
+        openai::summarize(&base_url, api_key, model, system_prompt, &transcript)
             .map_err(|e| format!("API error: {e}"))?
     } else {
         // Ollama uses base URL from OLLAMA_URL env var or defaults to localhost
