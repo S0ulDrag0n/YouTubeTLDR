@@ -4,7 +4,7 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/milkshiift/YouTubeTLDR/blob/master/LICENSE)
 
 <div align="center">
-<h3>⚡ A lightweight, self-hosted YouTube video summarizer with Ollama & Gemini AI<br>
+<h3>⚡ A lightweight, self-hosted YouTube video summarizer with Ollama, OpenAI-compatible & Gemini AI<br>
 <sub>Demo: <a href="https://tldr.milkshift.dedyn.io/">https://tldr.milkshift.dedyn.io/</a></sub>
 </h3>
 <img src="/assets/mainScreenshot.png" width="400" alt="New summary page screenshot">
@@ -13,9 +13,9 @@
 
 ## ✨ Features
 
-*   🤖 **Dual AI Support:** Choose between Ollama (default, self-hosted) or Gemini AI
+*   🤖 **Multiple AI Providers:** Choose between Ollama (default), OpenAI-compatible endpoints (llama.cpp, vllm), or Gemini AI
 *   🎯 **Customizable Prompts:** Tailor the AI's instructions to get summaries in the format you prefer
-*   ⚙️ **Model Selection:** Choose any available Ollama or Gemini model
+*   ⚙️ **Model Selection:** Choose any model available on your chosen provider
 *   📝 **View Transcript:** Access the full, raw video transcript
 *   📚 **History:** Your summaries are saved locally in your browser for future reference
 *   🔒 **Privacy-Focused:** Simple Rust server that runs on your own machine. Your data stays yours
@@ -37,7 +37,8 @@ Note: This server is optimized for personal use and utilizes a multithreaded wor
 ### Prerequisites
 
 *   **Option 1 (Default):** [Ollama](https://ollama.com/) installed locally or accessible on your network
-*   **Option 2:** A [Google Gemini API Key](https://aistudio.google.com/app/apikey) (Free tier with generous limits)
+*   **Option 2:** An OpenAI-compatible server (e.g., [llama.cpp](https://github.com/ggerganov/llama.cpp) or [vllm](https://github.com/vllm-project/vllm))
+*   **Option 3:** A [Google Gemini API Key](https://aistudio.google.com/app/apikey) (Free tier with generous limits)
 
 ### Running the Application
 
@@ -46,8 +47,11 @@ Note: This server is optimized for personal use and utilizes a multithreaded wor
     ./YouTubeTLDR
     ```
 2.  Open `http://localhost:8000` in your browser
-3.  Select your AI provider (Ollama or Gemini) in Settings
-4.  For Gemini: Enter your API key in Settings. Optional for Ollama.
+3.  Select your AI provider (Ollama, OpenAI Compatible, or Gemini) in Settings
+4.  Configure provider settings in Settings:
+    - **Gemini:** Enter your API key
+    - **OpenAI Compatible:** Set `OPENAI_URL` environment variable (default: `http://localhost:8000`). API key is optional for secured endpoints
+    - **Ollama:** Optional API key for secured servers
 5.  Paste a YouTube URL and click "Summarize"
 
 ### Environment Variables
@@ -56,10 +60,31 @@ Note: This server is optimized for personal use and utilizes a multithreaded wor
 *   `TLDR_PORT` - Server port (default: `8000`)
 *   `TLDR_WORKERS` - Number of worker threads (default: `4`)
 *   `OLLAMA_URL` - Ollama server URL (default: `http://localhost:11434`)
+*   `OPENAI_URL` - OpenAI-compatible server URL for llama.cpp/vllm (default: `http://localhost:8000`)
 
 **Example:**
 ```bash
 export OLLAMA_URL="http://192.168.1.100:11434"
+./YouTubeTLDR
+```
+
+**OpenAI-compatible endpoint example (llama.cpp):**
+```bash
+# Start llama.cpp server
+./server -m models/llama-3.2-instruct.Q4_K_M.gguf --host 0.0.0.0 --port 8000
+
+# Then run YouTubeTLDR pointing to it
+export OPENAI_URL="http://localhost:8000"
+./YouTubeTLDR
+```
+
+**OpenAI-compatible endpoint example (vllm):**
+```bash
+# Start vLLM server
+vllm serve meta-llama/Llama-3.2-3B-Instruct --host 0.0.0.0 --port 8000
+
+# Then run YouTubeTLDR pointing to it
+export OPENAI_URL="http://localhost:8000"
 ./YouTubeTLDR
 ```
 
